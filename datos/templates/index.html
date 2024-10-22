@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predicción de Infarto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+
+
+<body>
+
+<div class="container">
+    <h2>Ingrese sus datos para la predicción</h2>
+    <form id="predictionForm" action="/predict" method="POST">
+        <label for="age">Edad:</label>
+        <input type="number" id="age" name="age" required>
+        
+        <label for="heartRate">Ritmo cardíaco:</label>
+        <input type="number" id="heartRate" name="heartRate" required>
+
+        <label for="systolicBP">Presión sistólica:</label>
+        <input type="number" id="systolicBP" name="systolicBP" required>
+
+        <label for="diastolicBP">Presión diastólica:</label>
+        <input type="number" id="diastolicBP" name="diastolicBP" required>
+
+        <label for="bloodSugar">Nivel de azúcar en la sangre:</label>
+        <input type="number" id="bloodSugar" name="bloodSugar" required>
+
+        <label for="ckmb">CK-MB:</label>
+        <input type="number" id="ckmb" name="ckmb" required>
+
+        <label for="troponin">Troponina:</label>
+        <input type="number" id="troponin" name="troponin" step="0.0001" required>
+
+        <button type="button" onclick="submitData()">Enviar</button>
+    </form>
+    <p id="result"></p>
+
+
+    {% if prediction_text %}
+    <h2>Resultado: {{ prediction_text }}</h2>
+    {% endif %}
+
+
+
+<script>
+
+
+////////////////////////////// CODIGO ENCARGADO DE ENVIAR LOS DATOS DEL FORMULARIO A PYTHON
+    function submitData() {
+        const data = {
+            age: document.getElementById("age").value,
+            heartRate: document.getElementById("heartRate").value,
+            systolicBP: document.getElementById("systolicBP").value,
+            diastolicBP: document.getElementById("diastolicBP").value,
+            bloodSugar: document.getElementById("bloodSugar").value,
+            ckmb: document.getElementById("ckmb").value,
+            troponin: document.getElementById("troponin").value
+        };
+
+     
+        ///////// SE ENVIAN LOS DATOS A PYTHON CON AYUDA DE LA LIBRERIA FECTCH
+        fetch('/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+
+
+        ///////// CUANDO LOS DATOS SE CARGAN A PYTHON Y HACE EL PROCESO DE PREDICCION 
+        ///////// RETORNA UN MENSAJE AVISANDO SI SE VA CON SAN PEDRO O SE QUEDA CON NOSOTROS
+        .then(response => response.json())
+        .then(result => {
+            // Mostrar el resultado en la página
+            document.getElementById("result").innerText = `Resultado: ${result.prediccion}`;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+
+</script>
+
+</body>
+</html>
